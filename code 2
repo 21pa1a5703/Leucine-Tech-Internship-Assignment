@@ -1,0 +1,61 @@
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+
+function App() {
+  const [todos, setTodos] = useState([]);
+  const [newTodo, setNewTodo] = useState('');
+  const [message, setMessage] = useState('');
+
+  const fetchTodos = async () => {
+    const res = await axios.get('/api/todos');
+    setTodos(res.data);
+  };
+
+  useEffect(() => {
+    fetchTodos();
+  }, []);
+
+  const addTodo = async () => {
+    await axios.post('/api/todos', { text: newTodo });
+    setNewTodo('');
+    fetchTodos();
+  };
+
+  const deleteTodo = async (id) => {
+    await axios.delete(`/api/todos/${id}`);
+    fetchTodos();
+  };
+
+  const summarizeTodos = async () => {
+    try {
+      await axios.post('/api/summarize');
+      setMessage('Summary sent to Slack!');
+    } catch (e) {
+      setMessage('Failed to send summary.');
+    }
+  };
+
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl mb-4">Todo Summary Assistant</h1>
+      <input
+        className="border p-2"
+        value={newTodo}
+        onChange={(e) => setNewTodo(e.target.value)}
+      />
+      <button className="ml-2 bg-blue-500 text-white px-4 py-2" onClick={addTodo}>Add</button>
+      <ul className="mt-4">
+        {todos.map(todo => (
+          <li key={todo.id} className="flex justify-between my-2">
+            {todo.text}
+            <button onClick={() => deleteTodo(todo.id)} className="text-red-600">Delete</button>
+          </li>
+        ))}
+      </ul>
+      <button className="mt-4 bg-green-600 text-white px-4 py-2" onClick={summarizeTodos}>Summarize and Send to Slack</button>
+      {message && <p className="mt-2">{message}</p>}
+    </div>
+  );
+}
+
+export default App;
