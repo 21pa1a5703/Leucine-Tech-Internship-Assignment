@@ -1,1 +1,0 @@
-# Leucine-Tech-Internship-Assignment
